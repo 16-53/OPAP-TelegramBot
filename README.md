@@ -1,7 +1,7 @@
 # OPAP-TelegramBot
-This bot generates numbers for the game Joker (OPAP)
+This bot can generate Joker numbers and give you the latest lottery results.
 ____
-![image](https://user-images.githubusercontent.com/70277523/186581691-bd1d36f1-1e52-42c9-b2bf-baca66b82b70.png)
+![image](https://user-images.githubusercontent.com/70277523/187038826-c9c2eb8b-daab-4bec-9686-f3ebf70d89aa.png)
 ## Installation
 Clone the GitHub Repository:
 ```
