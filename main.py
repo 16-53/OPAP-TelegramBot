@@ -1,12 +1,14 @@
 from telebot import TeleBot, types
 from randomn import random_n
 from pathlib import Path
-import requests
-from bs4 import BeautifulSoup
-import re
+import datetime
+from result import res
+import logging
+
 
 token = Path("token.txt").read_text().strip()
 bot = TeleBot(token)
+cache = None
 
 
 @bot.message_handler(commands=["start", "help"])
@@ -30,24 +32,29 @@ def random_numbers(message):
 
 @bot.message_handler(commands=["results"])
 def last_results(message):
-    url = "https://www.opap.org.cy/en/joker/"
-    req = requests.get(url)
-    soup = BeautifulSoup(req.text, "lxml")
-    numbers = str(
-        soup.find("div", class_="draw-results-numbers-wrap").find(
-            "ul", class_="circles"
-        )
-    )
-    match = re.findall(r"\d+", numbers)
-    date = str(soup.find("span", class_="draw-number-warning"))[34:-7]
-    text = (
-        f"Last results ({date}):\n"
-        f"{match[0]} {match[1]} {match[2]} {match[3]} {match[4]}\n"
-        f"TZOKER number:\n"
-        f"{match[5]}"
-    )
-
-    bot.send_message(message.chat.id, text)
+    global cache
+    if cache is None:
+        logging.info("Cache is empty")
+        cache, text = res()[0], res()[1]
+        bot.send_message(message.chat.id, text)
+    else:
+        logging.info("Cache isn't empty")
+        if (
+            datetime.datetime.today().day - int(cache[0][0:2]) < 2
+            and int(cache[0][3:5]) == datetime.datetime.today().month
+            and int(cache[0][6:]) == datetime.datetime.today().year
+            and datetime.datetime.today().hour < 22
+        ):
+            text = (
+                f"Last results ({cache[0]}):\n"
+                f"{cache[1][0]} {cache[1][1]} {cache[1][2]} {cache[1][3]} {cache[1][4]}\n"
+                f"TZOKER number:\n"
+                f"{cache[1][5]}"
+            )
+            bot.send_message(message.chat.id, text)
+        else:
+            cache, text = res()[0], res()[1]
+            bot.send_message(message.chat.id, text)
 
 
 def actions():
