@@ -1,15 +1,15 @@
-from telebot import TeleBot, types
-from randomn import random_n
-from pathlib import Path
 import datetime
-from result import res
 import logging
+from pathlib import Path
 
+from randomn import random_n
+from result import res
+from telebot import TeleBot, types
 
 token = Path("token.txt").read_text().strip()
 bot = TeleBot(token)
 cache = None
-
+next_result = None
 
 @bot.message_handler(commands=["start", "help"])
 def start(message):
@@ -33,17 +33,22 @@ def random_numbers(message):
 @bot.message_handler(commands=["results"])
 def last_results(message):
     global cache
+    global next_result
     if cache is None:
         logging.info("Cache is empty")
-        cache, text = res()[0], res()[1]
+        cache, text, next_result = res()[0], res()[1], res()[2]
         bot.send_message(message.chat.id, text)
     else:
         logging.info("Cache isn't empty")
         if (
-            datetime.datetime.today().day - int(cache[0][0:2]) < 2
-            and int(cache[0][3:5]) == datetime.datetime.today().month
-            and int(cache[0][6:]) == datetime.datetime.today().year
-            and datetime.datetime.today().hour < 22
+            datetime.datetime.today().day < int(next_result[0])
+            and datetime.datetime.today().month <= int(next_result[1])
+            and datetime.datetime.today().year <= int(next_result[2])
+        ) or (
+            datetime.datetime.today().day == int(next_result[0])
+            and datetime.datetime.today().month <= int(next_result[1])
+            and datetime.datetime.today().year <= int(next_result[2])
+            and datetime.datetime.today().hour < 20
         ):
             text = (
                 f"Last results ({cache[0]}):\n"
@@ -53,7 +58,7 @@ def last_results(message):
             )
             bot.send_message(message.chat.id, text)
         else:
-            cache, text = res()[0], res()[1]
+            cache, text, next_result = res()[0], res()[1], res()[2]
             bot.send_message(message.chat.id, text)
 
 
