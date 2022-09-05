@@ -8,7 +8,8 @@ def res():
     url = "https://www.opap.org.cy/en/joker/"
     req = requests.get(url)
     soup = BeautifulSoup(req.text, "lxml")
-    next_res = str(soup.find("div", class_="day"))[34:-6].split('/')
+    next_res = str(soup.find("div", class_="day"))
+    match_nextres = re.findall(r"\d+", next_res)
     numbers = str(
         soup.find("div", class_="draw-results-numbers-wrap").find(
             "ul", class_="circles"
@@ -24,4 +25,4 @@ def res():
     )
     cache = [date, match]
 
-    return cache, text, next_res
+    return cache, text, match_nextres
